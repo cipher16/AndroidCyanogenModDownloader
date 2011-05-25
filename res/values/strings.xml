@@ -4,18 +4,10 @@
     <string name="type">Type of phone to download</string>
     <string-array name="phoneName">
     	<item>All</item>
-    	<item>Ace</item>
-    	<item>Blade</item>
-    	<item>Bravo</item>
-    	<item>Buzz</item>
     	<item>Galaxy S</item>
     </string-array>
     <string-array name="phoneUrl">
     	<item>/</item>
-    	<item>/?device=ace</item>
-    	<item>/?device=blade</item>
-    	<item>/?device=bravo</item>
-    	<item>/?device=buzz</item>
     	<item>/?device=galaxysmtd</item>
     </string-array>
 </resources>

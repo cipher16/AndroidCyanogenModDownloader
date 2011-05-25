@@ -4,11 +4,11 @@
     <PreferenceCategory android:title="General">
     	<EditTextPreference android:key="downloadUrl" android:title="Download Url" android:summary="The site to contact for download" android:defaultValue="http://download.cyanogenmod.com" />
     	<ListPreference
-            android:key="phoneType"
-            android:title="@string/type"
-            android:entries="@array/phoneName"
-            android:entryValues="@array/phoneUrl"
-            android:defaultValue="/"
-            android:dialogTitle="Type of phone" />
+    		android:key="phoneType"
+    		android:title="@string/type"
+    		android:entries="@array/phoneName"
+    		android:entryValues="@array/phoneUrl"
+    		android:defaultValue="/"
+    		android:dialogTitle="Type of phone" />
     </PreferenceCategory>
 </PreferenceScreen>
