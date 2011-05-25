@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="Title">
+    	<CheckBoxPreference android:key="cle" android:title="titre" android:summary="summary" />
+<!--     	<ListPreference -->
+<!--             android:key="list_preference" -->
+<!--             android:title="@string/type" -->
+<!--             android:summary="Summary" -->
+<!--             android:entries="@array/test0" -->
+<!--             android:entryValues="@array/test1" -->
+<!--             android:dialogTitle="DialogTitle" /> -->
+    </PreferenceCategory>
+</PreferenceScreen>

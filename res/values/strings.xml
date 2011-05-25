@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">CyanogenModDownloader</string>
+    <string name="type">Type</string>
+    <string-array name="test0">
+    	<item>valeur 1</item>
+    	<item>valeur 2</item>
+    	<item>valeur 3</item>
+    	<item>valeur 4</item>
+    	<item>valeur 5</item>
+    </string-array>
+    <string-array name="test1">
+    	<item>valeur 1</item>
+    	<item>valeur 2</item>
+    	<item>valeur 3</item>
+    	<item>valeur 4</item>
+    	<item>valeur 5</item>
+    </string-array>
+</resources>
