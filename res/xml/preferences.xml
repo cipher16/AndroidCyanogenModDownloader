@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen
   xmlns:android="http://schemas.android.com/apk/res/android">
-    <PreferenceCategory android:title="Title">
-    	<CheckBoxPreference android:key="cle" android:title="titre" android:summary="summary" />
-<!--     	<ListPreference -->
-<!--             android:key="list_preference" -->
-<!--             android:title="@string/type" -->
-<!--             android:summary="Summary" -->
-<!--             android:entries="@array/test0" -->
-<!--             android:entryValues="@array/test1" -->
-<!--             android:dialogTitle="DialogTitle" /> -->
+    <PreferenceCategory android:title="General">
+    	<EditTextPreference android:key="downloadUrl" android:title="Download Url" android:summary="The site to contact for download" android:defaultValue="http://download.cyanogenmod.com" />
+    	<ListPreference
+            android:key="phoneType"
+            android:title="@string/type"
+            android:entries="@array/phoneName"
+            android:entryValues="@array/phoneUrl"
+            android:defaultValue="/"
+            android:dialogTitle="Type of phone" />
     </PreferenceCategory>
 </PreferenceScreen>

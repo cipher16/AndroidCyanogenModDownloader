@@ -7,7 +7,7 @@
 <TextView  
     android:layout_width="fill_parent" 
     android:layout_height="wrap_content"
-    android:text="Recuperations des versions"
+    android:text="Choose the version to download"
     />
 <ListView android:layout_height="wrap_content" android:id="@+id/displayData" android:layout_width="match_parent"></ListView>
 </LinearLayout>

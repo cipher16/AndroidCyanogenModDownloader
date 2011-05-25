@@ -1,7 +1,5 @@
 package eu.cyanogen.downloader;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,15 +11,33 @@ import android.app.Activity;
 import android.widget.Toast;
 
 public class ParseData {
-	public static final String URL="http://download.cyanogenmod.com";
 	private TagNode tn;
 	private Activity activity;
-	public ParseData(Activity a,String url) {
+	private static ParseData instance;
+	private ParseData(Activity a,String url) {
 		HtmlCleaner hc = new HtmlCleaner();
 		activity=a;
 		try {
-			tn = hc.clean(new java.net.URL(URL+url));//when we have to parse specific url
+			tn = hc.clean(new java.net.URL(url));//when we have to parse specific url
 		} catch (Exception e) {}
+	}
+	/**
+	 * Provided url must be complete
+	 * @param a
+	 * @param url
+	 * @param renew
+	 * @return
+	 */
+	public static ParseData getInstance(Activity a,String url,boolean renew)
+	{
+		if(instance==null|renew)
+			instance=new ParseData(a, url);
+		return instance;
+	}
+	
+	public static ParseData getInstance()
+	{
+		return instance;
 	}
 	
 	public List<HashMap<String,String>> retrieveDownloadsList()
@@ -53,10 +69,10 @@ public class ParseData {
 				tmp.put("link", ((TagNode) o).getElementsByName("a", false)[0].getAttributeByName("href"));
 				types.add(tmp);
 			}
-		} catch (Exception e) {displayToast(e.getMessage());}
+		} catch (Exception e) {displayToast("TypeList "+e.getMessage());}
 		return types;
 	}
-	public List<HashMap<String,String>> retrievePhonesList()
+	public ArrayList<HashMap<String, String>> retrievePhonesList()
 	{
 		ArrayList<HashMap<String,String>> phones= new ArrayList<HashMap<String,String>>();
 		HashMap<String, String> tmp;
@@ -68,10 +84,10 @@ public class ParseData {
 				tmp.put("link", ((TagNode) o).getElementsByName("a", false)[0].getAttributeByName("href"));
 				phones.add(tmp);
 			}
-		} catch (Exception e) {displayToast(e.getMessage());}
+		} catch (Exception e) {displayToast("PhoneList "+e.getMessage());}
 		return phones;
 	}
-	private void displayToast(String message)
+	public void displayToast(String message)
 	{
 		Toast toast=Toast.makeText(activity, message, Toast.LENGTH_LONG);  
 		toast.show();
