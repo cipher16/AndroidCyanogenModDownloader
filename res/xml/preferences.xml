@@ -11,4 +11,8 @@
     		android:defaultValue="/"
     		android:dialogTitle="Type of phone" />
     </PreferenceCategory>
+    <PreferenceCategory android:title="Update Checker">
+		<CheckBoxPreference android:key="useUpdater" android:defaultValue="off" android:title="Check for update" android:summary="Use the Update Checker to get notified when an update is found" />
+		<EditTextPreference android:key="intervalUpdater" android:defaultValue="60" android:title="Update Interval" android:summary="In minutes" android:dependency="useUpdater" />
+    </PreferenceCategory>
 </PreferenceScreen>

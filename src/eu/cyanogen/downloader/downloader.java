@@ -1,9 +1,17 @@
 package eu.cyanogen.downloader;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -33,6 +41,7 @@ public class downloader extends Activity implements OnSharedPreferenceChangeList
 	private static String URL="http://download.cyanogenmod.com";
 	private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 	private String url;
+	private SharedPreferences prefs;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,29 +56,31 @@ public class downloader extends Activity implements OnSharedPreferenceChangeList
         		AlertDialog.Builder adb = new AlertDialog.Builder(downloader.this);
         		adb.setTitle("Download this version ?");
         		adb.setMessage("Your choice : "+map.get("name")+"\n"+map.get("size")+"\n"+map.get("date"));
-        		adb.setPositiveButton("Ok", new OnClickListener() {@Override public void onClick(DialogInterface arg0, int arg1) {downloader(map.get("link"));}});
+        		adb.setPositiveButton("Ok", new OnClickListener() {@Override public void onClick(DialogInterface arg0, int arg1) {download(map.get("link"));}});
         		adb.setNegativeButton("Cancel", null);
         		adb.show();
         	}
          });
         
         /*Get preferences and display data*/
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        prefs = PreferenceManager.getDefaultSharedPreferences(this);
         prefs.registerOnSharedPreferenceChangeListener(this);
         url=prefs.getString("downloadUrl",URL)+prefs.getString("phoneType","/");
         retrieveInformation();
-        startChecker();
+        if(prefs.contains("useUpdater")&&prefs.getBoolean("useUpdater", false))
+        	startChecker();
     }
     /**
-     * By default check update every hours
+     * By default check update every hours ... should not be used if not enabled ....
      */
     private void startChecker()
     {
-    	scheduler.schedule(new Runnable(){public void run(){checker();}},60*60,TimeUnit.SECONDS);
+    	if(prefs.contains("intervalUpdater"))
+    		scheduler.schedule(new Runnable(){public void run(){checker();}},60*Integer.parseInt(prefs.getString("intervalUpdater", "60")) ,TimeUnit.SECONDS);
     }
     private void checker()
     {
-    	/*Notification*/
+    	/*Notification ... need to find out a checking method ;)*/
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         Notification notification = new Notification(R.drawable.icon, "A new version of cyanogen is available", System.currentTimeMillis());
         Intent notificationIntent = new Intent(this, downloader.class);
@@ -77,9 +88,33 @@ public class downloader extends Activity implements OnSharedPreferenceChangeList
         notification.setLatestEventInfo(getApplicationContext(), "Cyanogen Update", "Version VERSION is now out for PHONE and NIGHTLY", contentIntent);
         mNotificationManager.notify(1, notification);
     }
-    private void downloader(String url)
+    private void download(String url)
     {
     	String urlD = PreferenceManager.getDefaultSharedPreferences(this).getString("downloadUrl",URL)+url;
+    	if(urlD.startsWith("http"))
+    	{
+    		HttpGet hg = new HttpGet(urlD);
+    		HttpClient cli = new DefaultHttpClient();
+    		
+    		String FILENAME = urlD.substring(urlD.lastIndexOf("/")+1);
+
+    		FileOutputStream fos;
+    		int r;
+			try {
+				fos = openFileOutput(FILENAME, Context.MODE_PRIVATE);
+				while( (r=cli.execute(hg).getEntity().getContent().read()) >0)
+				{
+					fos.write(r);
+				}
+				fos.close();
+				ParseData.getInstance().displayToast("File downloaded : "+FILENAME);
+			} catch (Exception e) {
+				ParseData.getInstance().displayToast("Unable to write file : "+e.toString());
+			}
+    	}else
+    	{
+    		ParseData.getInstance().displayToast("Problem with url ... download aborted :s");
+    	}
     }
     private void retrieveInformation()
     {
