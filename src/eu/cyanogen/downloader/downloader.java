@@ -24,8 +24,10 @@ import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -66,6 +68,8 @@ public class downloader extends Activity implements OnSharedPreferenceChangeList
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
         prefs.registerOnSharedPreferenceChangeListener(this);
         url=prefs.getString("downloadUrl",URL)+prefs.getString("phoneType","/");
+        
+        /*Start processes*/
         retrieveInformation();
         if(prefs.contains("useUpdater")&&prefs.getBoolean("useUpdater", false))
         	startChecker();
@@ -92,25 +96,8 @@ public class downloader extends Activity implements OnSharedPreferenceChangeList
     {
     	String urlD = PreferenceManager.getDefaultSharedPreferences(this).getString("downloadUrl",URL)+url;
     	if(urlD.startsWith("http"))
-    	{
-    		HttpGet hg = new HttpGet(urlD);
-    		HttpClient cli = new DefaultHttpClient();
-    		
-    		String FILENAME = urlD.substring(urlD.lastIndexOf("/")+1);
-
-    		FileOutputStream fos;
-    		int r;
-			try {
-				fos = openFileOutput(FILENAME, Context.MODE_PRIVATE);
-				while( (r=cli.execute(hg).getEntity().getContent().read()) >0)
-				{
-					fos.write(r);
-				}
-				fos.close();
-				ParseData.getInstance().displayToast("File downloaded : "+FILENAME);
-			} catch (Exception e) {
-				ParseData.getInstance().displayToast("Unable to write file : "+e.toString());
-			}
+    	{//use the browser to download ... so no need to have right to write data
+    		startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(urlD)));
     	}else
     	{
     		ParseData.getInstance().displayToast("Problem with url ... download aborted :s");
@@ -152,6 +139,10 @@ public class downloader extends Activity implements OnSharedPreferenceChangeList
 		if(arg1.equals("phoneType"))
 		{
 			url=arg0.getString("downloadUrl",URL)+arg0.getString("phoneType","/");
+		}
+		if(arg1.equals("useUpdater"))
+		{
+			startChecker();
 		}
 	}
 }
