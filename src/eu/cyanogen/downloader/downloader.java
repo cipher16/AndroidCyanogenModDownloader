@@ -98,6 +98,7 @@ public class downloader extends Activity implements OnSharedPreferenceChangeList
     }
     private void checker()
     {
+    	/*TODO: Finish the checker*/
     	/*Notification ... need to find out a checking method ;)*/
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         Notification notification = new Notification(R.drawable.icon, "A new version of cyanogen is available", System.currentTimeMillis());
@@ -128,16 +129,13 @@ public class downloader extends Activity implements OnSharedPreferenceChangeList
 						checker.setLength((int) he.getContentLength());
 						checker.start();
 						he.writeTo(new FileOutputStream(fo));
-    				}catch(Exception e)
-    	    		{
-    					checker.stop();
-    	    		}
+    				}catch(Exception e){checker.stop();}
 				}
 			};
 			dl.start();
     	}else
     	{
-    		this.displayToast("Problem with url ... download aborted");
+    		this.displayToast("Problem with URL : download aborted ");
     	}
     }
     private void retrieveInformation()
@@ -201,14 +199,14 @@ public class downloader extends Activity implements OnSharedPreferenceChangeList
         public void run()
 		{
 			Intent intent = new Intent(downloader.this, downloader.class);
-            final PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, 0);
-            // configure the notification
+            PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, 0);
+        // configure the ongoing event
             final Notification notification = new Notification(R.drawable.icon, "Downloading a ROM", System.currentTimeMillis());
             notification.flags = notification.flags | Notification.FLAG_ONGOING_EVENT;
             notification.contentView = new RemoteViews(getApplicationContext().getPackageName(), R.layout.download_progress);
             notification.contentIntent = pendingIntent;
             notification.contentView.setImageViewResource(R.id.status_icon, R.drawable.icon);
-            notification.contentView.setTextViewText(R.id.status_text, "Download in progress");
+            notification.contentView.setTextViewText(R.id.status_text, "Downloading "+fo.getName());
             notification.contentView.setProgressBar(R.id.status_progress, length, 0, false);
             final NotificationManager notificationManager = (NotificationManager) getApplicationContext().getSystemService(getApplicationContext().NOTIFICATION_SERVICE);
             notificationManager.notify(42, notification);
@@ -219,6 +217,11 @@ public class downloader extends Activity implements OnSharedPreferenceChangeList
 	    	         notificationManager.notify(42, notification);
 	    	         this.sleep(2000);//wait 2 sec between 
 	    	    }
+	            notificationManager.cancel(42);//remove notification once the download finished
+	        //display notification saying that application is downloaded
+	            Notification notDL = new Notification(R.drawable.icon, "Finished ROM Download", System.currentTimeMillis());
+	            notification.setLatestEventInfo(getApplicationContext(), "CyanogenMod Downloader", "File "+fo.getAbsolutePath()+" has been downloaded", pendingIntent);
+	            notificationManager.notify(2, notDL);
             }catch (InterruptedException e) {return;}
 		}
 		
