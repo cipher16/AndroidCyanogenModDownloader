@@ -50,6 +50,7 @@ public class ParseData {
 				tmp.put("name", ((TagNode) o).getElementsByName("td", false)[0].getElementsByName("a", false)[0].getText().toString());
 				tmp.put("type", "Type : "+((TagNode) o).getElementsByName("td", false)[1].getText().toString());
 				tmp.put("link", ((TagNode) o).getElementsByName("td", false)[2].getElementsByName("a", false)[0].getAttributeByName("href"));
+				tmp.put("md5", ((TagNode) o).getElementsByName("td", false)[2].getElementsByName("small", false)[0].getText().toString());
 				tmp.put("size", "Size : "+((TagNode) o).getElementsByName("td", false)[3].getElementsByName("small", false)[0].getText().toString());
 				tmp.put("date", "Date : "+((TagNode) o).getElementsByName("td", false)[4].getElementsByName("small", false)[0].getText().toString());
 				types.add(tmp);

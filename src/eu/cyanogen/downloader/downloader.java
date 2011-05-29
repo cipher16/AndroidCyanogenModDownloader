@@ -1,20 +1,14 @@
 package eu.cyanogen.downloader;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.security.acl.LastOwnerException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.http.HttpEntity;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 
@@ -30,10 +24,8 @@ import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
-import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -52,10 +44,12 @@ public class downloader extends Activity implements OnSharedPreferenceChangeList
 	private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 	private String url;
 	private SharedPreferences prefs;
+	private String lastMD5;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+        lastMD5="";
         displayData=(ListView)findViewById(R.id.displayData);
         /*Set click*/
         displayData.setOnItemClickListener(new OnItemClickListener(){
@@ -98,23 +92,28 @@ public class downloader extends Activity implements OnSharedPreferenceChangeList
     }
     private void checker()
     {
-    	/*TODO: Finish the checker*/
-    	/*Notification ... need to find out a checking method ;)*/
+    	ParseData pd = ParseData.getInstance(downloader.this, url,true);
+		List<HashMap<String,String>> list = pd.retrieveDownloadsList();
+		if(list.isEmpty())
+			return;
+		if(!list.isEmpty()&& downloader.this.lastMD5.equals(list.get(0).get("md5")))
+			return;
+		
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         Notification notification = new Notification(R.drawable.icon, "A new version of cyanogen is available", System.currentTimeMillis());
         Intent notificationIntent = new Intent(this, downloader.class);
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-        notification.setLatestEventInfo(getApplicationContext(), "Cyanogen Update", "Version VERSION is now out for PHONE and NIGHTLY", contentIntent);
+        notification.setLatestEventInfo(getApplicationContext(), 
+        		"Cyanogenmod Update", 
+        		"New update "+list.get(0).get("name")+" ("+list.get(0).get("type")+") from "+list.get(0).get("date")+" with "+list.get(0).get("size"), 
+        		contentIntent);
         mNotificationManager.notify(1, notification);
     }
     private void download(String url)
     {
     	final String urlD = PreferenceManager.getDefaultSharedPreferences(this).getString("downloadUrl",URL)+url;
     	if(urlD.startsWith("http"))
-    	{//use the browser to download ... so no need to have right to write data
-    		//unable to DL zip ... too bad startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(urlD)));
-    		
-    		//Most uglier code ever !!!!!!!!! WTF 
+    	{
     		final File fo = new File(getFilesDir(),urlD.substring(urlD.lastIndexOf("/")+1));
 			final ThreadChecker checker = new ThreadChecker(fo);
 			this.displayToast("File will be downloaded into : "+fo.getAbsolutePath());
@@ -140,11 +139,24 @@ public class downloader extends Activity implements OnSharedPreferenceChangeList
     }
     private void retrieveInformation()
     {
-        ProgressDialog pdialog = ProgressDialog.show(this, "", "Loading. Please wait...", true);
-    	ParseData pd = ParseData.getInstance(this, url,true);
-        SimpleAdapter mSchedule = new SimpleAdapter (downloader.this.getBaseContext(), pd.retrieveDownloadsList(), R.layout.list, new String[] {"name", "date", "size","type"}, new int[] {R.id.name,R.id.date,R.id.size,R.id.type});
-        displayData.setAdapter(mSchedule);
-        pdialog.dismiss();
+        final ProgressDialog pdialog = ProgressDialog.show(this, "", "Loading. Please wait...", true);
+        new Thread(){
+        	@Override
+        	public void run() {
+        		runOnUiThread(new Runnable() {
+        			@Override 
+        			public void run() {
+        				ParseData pd = ParseData.getInstance(downloader.this, url,true);
+        				List<HashMap<String,String>> list = pd.retrieveDownloadsList();
+        				if(!list.isEmpty())
+        					downloader.this.lastMD5 = list.get(0).get("md5");
+            	        SimpleAdapter mSchedule = new SimpleAdapter (downloader.this.getBaseContext(), list, R.layout.list, new String[] {"name", "date", "size","type"}, new int[] {R.id.name,R.id.date,R.id.size,R.id.type});
+            	        downloader.this.displayData.setAdapter(mSchedule);
+        			}
+                });
+    	        pdialog.dismiss();   		
+        	};
+        }.start();
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
@@ -218,19 +230,15 @@ public class downloader extends Activity implements OnSharedPreferenceChangeList
 	    	         this.sleep(2000);//wait 2 sec between 
 	    	    }
 	            notificationManager.cancel(42);//remove notification once the download finished
-	        //display notification saying that application is downloaded
-//	            PendingIntent eventIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, 0);
 	            
 	            Notification notDL = new Notification(R.drawable.icon, "Finished ROM Download", System.currentTimeMillis());
 	            notDL.setLatestEventInfo(getApplicationContext(), "CyanogenMod Downloader", "File "+fo.getAbsolutePath()+" has been downloaded", pendingIntent);
 	            notificationManager.notify(2, notDL);
             }catch(InterruptedException e){return;}
 		}
-		
 		public void setLength(int length)
 		{
 			this.length=length;
 		}
 	};
-	
 }
