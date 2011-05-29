@@ -109,8 +109,7 @@ public class downloader extends Activity implements OnSharedPreferenceChangeList
     }
     private void download(String url)
     {
-//    	final String urlD = PreferenceManager.getDefaultSharedPreferences(this).getString("downloadUrl",URL)+url;
-    	final String urlD = "http://192.168.1.12/"+url;
+    	final String urlD = PreferenceManager.getDefaultSharedPreferences(this).getString("downloadUrl",URL)+url;
     	if(urlD.startsWith("http"))
     	{//use the browser to download ... so no need to have right to write data
     		//unable to DL zip ... too bad startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(urlD)));
