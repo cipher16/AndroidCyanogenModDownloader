@@ -109,7 +109,8 @@ public class downloader extends Activity implements OnSharedPreferenceChangeList
     }
     private void download(String url)
     {
-    	final String urlD = PreferenceManager.getDefaultSharedPreferences(this).getString("downloadUrl",URL)+url;
+//    	final String urlD = PreferenceManager.getDefaultSharedPreferences(this).getString("downloadUrl",URL)+url;
+    	final String urlD = "http://192.168.1.12/"+url;
     	if(urlD.startsWith("http"))
     	{//use the browser to download ... so no need to have right to write data
     		//unable to DL zip ... too bad startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(urlD)));
@@ -208,7 +209,7 @@ public class downloader extends Activity implements OnSharedPreferenceChangeList
             notification.contentView.setImageViewResource(R.id.status_icon, R.drawable.icon);
             notification.contentView.setTextViewText(R.id.status_text, "Downloading "+fo.getName());
             notification.contentView.setProgressBar(R.id.status_progress, length, 0, false);
-            final NotificationManager notificationManager = (NotificationManager) getApplicationContext().getSystemService(getApplicationContext().NOTIFICATION_SERVICE);
+            NotificationManager notificationManager = (NotificationManager) getApplicationContext().getSystemService(getApplicationContext().NOTIFICATION_SERVICE);
             notificationManager.notify(42, notification);
             
             try {
@@ -219,10 +220,12 @@ public class downloader extends Activity implements OnSharedPreferenceChangeList
 	    	    }
 	            notificationManager.cancel(42);//remove notification once the download finished
 	        //display notification saying that application is downloaded
+//	            PendingIntent eventIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, 0);
+	            
 	            Notification notDL = new Notification(R.drawable.icon, "Finished ROM Download", System.currentTimeMillis());
-	            notification.setLatestEventInfo(getApplicationContext(), "CyanogenMod Downloader", "File "+fo.getAbsolutePath()+" has been downloaded", pendingIntent);
+	            notDL.setLatestEventInfo(getApplicationContext(), "CyanogenMod Downloader", "File "+fo.getAbsolutePath()+" has been downloaded", pendingIntent);
 	            notificationManager.notify(2, notDL);
-            }catch (InterruptedException e) {return;}
+            }catch(InterruptedException e){return;}
 		}
 		
 		public void setLength(int length)
