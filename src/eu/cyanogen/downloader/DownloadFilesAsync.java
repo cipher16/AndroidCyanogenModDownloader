@@ -60,8 +60,8 @@ public class DownloadFilesAsync extends AsyncTask<String, Integer, Integer> {
 		            os.write(buffer, 0, len);
 		            curLength+=len;
 		            if(curLength>(lastLength+1048576/*1024*1024*/))
-		            {
-		            	publishProgress((int)(curLength/fileSize*100));
+		            {//to not spam to notification process, only update it on mega update
+		            	publishProgress((int)(((float)curLength/fileSize)*100));
 		            	lastLength = curLength;
 		            }
 		        }
@@ -69,7 +69,6 @@ public class DownloadFilesAsync extends AsyncTask<String, Integer, Integer> {
 		        is.close();
 			} catch (Exception e) {
 				Log.v("DownloadFilesAsync",e.getMessage());
-				e.printStackTrace();
 			}
 		}
 		return size;
@@ -77,11 +76,9 @@ public class DownloadFilesAsync extends AsyncTask<String, Integer, Integer> {
 	
 	@Override
 	protected void onProgressUpdate(Integer... values) {
-		Log.v("UpdatingProgress","Current value : "+values[0]+"/100 max : "+fileSize);
-
 		if(notificationManager!=null&&notification!=null)
 		{
-			notification.contentView.setProgressBar(R.id.status_progress, (int) values[0], fileSize, false);
+			notification.contentView.setProgressBar(R.id.status_progress, 100, values[0], false);
 			notificationManager.notify(42, notification);
 		}
 	}
@@ -91,7 +88,6 @@ public class DownloadFilesAsync extends AsyncTask<String, Integer, Integer> {
 		if(notificationManager!=null)
 		{
 	        notificationManager.cancel(42);//remove notification once the download finished
-	        
 	        Notification notDL = new Notification(R.drawable.icon, "Finished ROM Download", System.currentTimeMillis());
 	        notDL.setLatestEventInfo(context, "CyanogenMod Downloader", "File "+downloadedFile.getAbsolutePath()+" has been downloaded", pendingIntent);
 	        notificationManager.notify(2, notDL);

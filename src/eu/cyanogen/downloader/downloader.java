@@ -1,16 +1,10 @@
 package eu.cyanogen.downloader;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -25,7 +19,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
-import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -33,7 +26,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
-import android.widget.RemoteViews;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
@@ -116,29 +108,6 @@ public class downloader extends Activity implements OnSharedPreferenceChangeList
     	if(urlD.startsWith("http"))
     	{
     		new DownloadFilesAsync(this, downloadPath).execute(urlD);
-    	/*	final File fo = new File(Environment.getExternalStorageDirectory()+downloadPath,urlD.substring(urlD.lastIndexOf("/")+1));
-			final ThreadChecker checker = new ThreadChecker(fo);
-			this.displayToast("File will be downloaded into : "+fo.getAbsolutePath());
-			Thread dl = new Thread()
-			{
-				@Override
-	            public void run()
-				{
-					try
-					{
-						HttpGet hg = new HttpGet(urlD);
-						if(fo.exists())
-							hg.addHeader("Range", "bytes="+fo.length()+"-");//if already downloaded, will do nothing
-						HttpEntity he = new DefaultHttpClient().execute(hg).getEntity();
-						checker.setLength(he.getContentLength());
-						checker.start();
-						he.writeTo(new FileOutputStream(fo));
-    				}catch(Exception e){
-    					checker.stop();
-    				}
-				}
-			};
-			dl.start();*/
     	}else
     	{
     		this.displayToast("Problem with URL : download aborted ");
@@ -211,46 +180,4 @@ public class downloader extends Activity implements OnSharedPreferenceChangeList
 		Toast toast=Toast.makeText(this, message, Toast.LENGTH_LONG);  
 		toast.show();
 	}
-	class ThreadChecker extends Thread
-	{
-		long length;
-		File fo;
-		public ThreadChecker(File fo) {
-			this.fo = fo;
-		}
-		
-		@Override
-        public void run()
-		{
-			Intent intent = new Intent(downloader.this, downloader.class);
-            PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, 0);
-        // configure the ongoing event
-            final Notification notification = new Notification(R.drawable.icon, "Downloading a ROM", System.currentTimeMillis());
-            notification.flags = notification.flags | Notification.FLAG_ONGOING_EVENT;
-            notification.contentView = new RemoteViews(getApplicationContext().getPackageName(), R.layout.download_progress);
-            notification.contentIntent = pendingIntent;
-            notification.contentView.setImageViewResource(R.id.status_icon, R.drawable.icon);
-            notification.contentView.setTextViewText(R.id.status_text, "Downloading "+fo.getName());
-            notification.contentView.setProgressBar(R.id.status_progress, (int)length, 0, false);
-            NotificationManager notificationManager = (NotificationManager) getApplicationContext().getSystemService(getApplicationContext().NOTIFICATION_SERVICE);
-            notificationManager.notify(42, notification);
-            
-            try {
-	            while ( length>fo.length() ) {
-	    	         notification.contentView.setProgressBar(R.id.status_progress, (int) length, (int) fo.length(), false);
-	    	         notificationManager.notify(42, notification);
-	    	         this.sleep(2000);//wait 2 sec between 
-	    	    }
-	            notificationManager.cancel(42);//remove notification once the download finished
-	            
-	            Notification notDL = new Notification(R.drawable.icon, "Finished ROM Download", System.currentTimeMillis());
-	            notDL.setLatestEventInfo(getApplicationContext(), "CyanogenMod Downloader", "File "+fo.getAbsolutePath()+" has been downloaded", pendingIntent);
-	            notificationManager.notify(2, notDL);
-            }catch(InterruptedException e){return;}
-		}
-		public void setLength(long length)
-		{
-			this.length=length;
-		}
-	};
 }
