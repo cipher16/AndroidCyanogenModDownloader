@@ -9,8 +9,10 @@ package eu.cyanogen.downloader;
 
 public final class R {
     public static final class array {
-        public static final int phoneName=0x7f060000;
-        public static final int phoneUrl=0x7f060001;
+        public static final int listFolder=0x7f050000;
+        public static final int listValue=0x7f050001;
+        public static final int phoneName=0x7f050002;
+        public static final int phoneUrl=0x7f050003;
     }
     public static final class attr {
     }
@@ -34,8 +36,8 @@ public final class R {
         public static final int main=0x7f030002;
     }
     public static final class string {
-        public static final int app_name=0x7f050000;
-        public static final int type=0x7f050001;
+        public static final int app_name=0x7f060000;
+        public static final int type=0x7f060001;
     }
     public static final class xml {
         public static final int preferences=0x7f040000;

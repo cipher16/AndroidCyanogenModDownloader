@@ -25,6 +25,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -42,7 +43,7 @@ public class downloader extends Activity implements OnSharedPreferenceChangeList
 	ListView displayData;
 	private static String URL="http://download.cyanogenmod.com";
 	private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-	private String url;
+	private String url,downloadPath="/";
 	private SharedPreferences prefs;
 	private String lastMD5;
     @Override
@@ -76,7 +77,7 @@ public class downloader extends Activity implements OnSharedPreferenceChangeList
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
         prefs.registerOnSharedPreferenceChangeListener(this);
         url=prefs.getString("downloadUrl",URL)+prefs.getString("phoneType","/");
-        
+        downloadPath=prefs.getString("downloadPath", "/");
         /*Start processes*/
         retrieveInformation();
         if(prefs.contains("useUpdater")&&prefs.getBoolean("useUpdater", false))
@@ -114,7 +115,8 @@ public class downloader extends Activity implements OnSharedPreferenceChangeList
     	final String urlD = PreferenceManager.getDefaultSharedPreferences(this).getString("downloadUrl",URL)+url;
     	if(urlD.startsWith("http"))
     	{
-    		final File fo = new File(getFilesDir(),urlD.substring(urlD.lastIndexOf("/")+1));
+    		new DownloadFilesAsync(this, downloadPath).execute(urlD);
+    	/*	final File fo = new File(Environment.getExternalStorageDirectory()+downloadPath,urlD.substring(urlD.lastIndexOf("/")+1));
 			final ThreadChecker checker = new ThreadChecker(fo);
 			this.displayToast("File will be downloaded into : "+fo.getAbsolutePath());
 			Thread dl = new Thread()
@@ -124,14 +126,19 @@ public class downloader extends Activity implements OnSharedPreferenceChangeList
 				{
 					try
 					{
-						HttpEntity he = new DefaultHttpClient().execute(new HttpGet(urlD)).getEntity();
-						checker.setLength((int) he.getContentLength());
+						HttpGet hg = new HttpGet(urlD);
+						if(fo.exists())
+							hg.addHeader("Range", "bytes="+fo.length()+"-");//if already downloaded, will do nothing
+						HttpEntity he = new DefaultHttpClient().execute(hg).getEntity();
+						checker.setLength(he.getContentLength());
 						checker.start();
 						he.writeTo(new FileOutputStream(fo));
-    				}catch(Exception e){checker.stop();}
+    				}catch(Exception e){
+    					checker.stop();
+    				}
 				}
 			};
-			dl.start();
+			dl.start();*/
     	}else
     	{
     		this.displayToast("Problem with URL : download aborted ");
@@ -188,10 +195,15 @@ public class downloader extends Activity implements OnSharedPreferenceChangeList
 		if(arg1.equals("phoneType"))
 		{
 			url=arg0.getString("downloadUrl",URL)+arg0.getString("phoneType","/");
+			retrieveInformation();
 		}
 		if(arg1.equals("useUpdater"))
 		{
 			startChecker();
+		}
+		if(arg1.equals("downloadPath"))
+		{
+			downloadPath=arg0.getString("downloadPath", "/");
 		}
 	}
 	public void displayToast(String message)
@@ -201,7 +213,7 @@ public class downloader extends Activity implements OnSharedPreferenceChangeList
 	}
 	class ThreadChecker extends Thread
 	{
-		int length;
+		long length;
 		File fo;
 		public ThreadChecker(File fo) {
 			this.fo = fo;
@@ -219,13 +231,13 @@ public class downloader extends Activity implements OnSharedPreferenceChangeList
             notification.contentIntent = pendingIntent;
             notification.contentView.setImageViewResource(R.id.status_icon, R.drawable.icon);
             notification.contentView.setTextViewText(R.id.status_text, "Downloading "+fo.getName());
-            notification.contentView.setProgressBar(R.id.status_progress, length, 0, false);
+            notification.contentView.setProgressBar(R.id.status_progress, (int)length, 0, false);
             NotificationManager notificationManager = (NotificationManager) getApplicationContext().getSystemService(getApplicationContext().NOTIFICATION_SERVICE);
             notificationManager.notify(42, notification);
             
             try {
 	            while ( length>fo.length() ) {
-	    	         notification.contentView.setProgressBar(R.id.status_progress, length, (int) fo.length(), false);
+	    	         notification.contentView.setProgressBar(R.id.status_progress, (int) length, (int) fo.length(), false);
 	    	         notificationManager.notify(42, notification);
 	    	         this.sleep(2000);//wait 2 sec between 
 	    	    }
@@ -236,7 +248,7 @@ public class downloader extends Activity implements OnSharedPreferenceChangeList
 	            notificationManager.notify(2, notDL);
             }catch(InterruptedException e){return;}
 		}
-		public void setLength(int length)
+		public void setLength(long length)
 		{
 			this.length=length;
 		}

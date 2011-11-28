@@ -2,8 +2,16 @@
 <PreferenceScreen
   xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory android:title="General">
-    	<EditTextPreference android:key="downloadUrl" android:title="Download Url" android:summary="The site to contact for download" android:defaultValue="http://download.cyanogenmod.com" />
+    	<EditTextPreference android:key="downloadUrl" android:title="Download Url" android:summary="The site to use for download (don't touch it unless you know what you're doing)" android:defaultValue="http://download.cyanogenmod.com" />
 		<eu.cyanogen.downloader.PhonePreference android:key="phoneType" android:title="@string/type" android:defaultValue="/" />
+		<ListPreference
+			android:key="downloadPath"
+			android:title="Download path"
+			android:summary="The download path to retrieve your file"
+			android:entries="@array/listFolder"
+			android:entryValues="@array/listValue"
+			android:defaultValue="/"
+		 />
     </PreferenceCategory>
     <PreferenceCategory android:title="Update Checker">
 		<CheckBoxPreference android:key="useUpdater" android:defaultValue="off" android:title="Check for update" android:summary="Use the Update Checker to get notified when an update is found" />
