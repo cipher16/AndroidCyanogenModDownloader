@@ -52,7 +52,7 @@ public class downloader extends Activity implements OnSharedPreferenceChangeList
         		final HashMap<String, String> map = (HashMap<String, String>) displayData.getItemAtPosition(position);
         		AlertDialog.Builder adb = new AlertDialog.Builder(downloader.this);
         		adb.setTitle("Download this version ?");
-        		adb.setMessage("Your choice : "+map.get("name")+"\n"+map.get("size")+"\n"+map.get("date"));
+        		adb.setMessage("Your choice : "+map.get("fileN")+"\n"+map.get("size")+"\n"+map.get("date"));
         		adb.setPositiveButton("Ok", new OnClickListener() {
         			@Override
         			public void onClick(DialogInterface arg0, int arg1)
@@ -98,7 +98,7 @@ public class downloader extends Activity implements OnSharedPreferenceChangeList
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
         notification.setLatestEventInfo(getApplicationContext(), 
         		"Cyanogenmod Update", 
-        		"New update "+list.get(0).get("name")+" ("+list.get(0).get("type")+") from "+list.get(0).get("date")+" with "+list.get(0).get("size"), 
+        		"New update "+list.get(0).get("fileN")+" ("+list.get(0).get("type")+") from "+list.get(0).get("date")+" with "+list.get(0).get("size"), 
         		contentIntent);
         mNotificationManager.notify(1, notification);
     }
@@ -126,11 +126,11 @@ public class downloader extends Activity implements OnSharedPreferenceChangeList
         				List<HashMap<String,String>> list = pd.retrieveDownloadsList();
         				if(!list.isEmpty())
         					downloader.this.lastMD5 = list.get(0).get("md5");
-            	        SimpleAdapter mSchedule = new SimpleAdapter (downloader.this.getBaseContext(), list, R.layout.list, new String[] {"name", "date", "size","type"}, new int[] {R.id.name,R.id.date,R.id.size,R.id.type});
+            	        SimpleAdapter mSchedule = new SimpleAdapter (downloader.this.getBaseContext(), list, R.layout.list, new String[] {"name", "file", "date", "size","type"}, new int[] {R.id.name,R.id.link,R.id.date,R.id.size,R.id.type});
             	        downloader.this.displayData.setAdapter(mSchedule);
         			}
                 });
-    	        pdialog.dismiss();   		
+    	        pdialog.dismiss();
         	};
         }.start();
     }
@@ -175,6 +175,24 @@ public class downloader extends Activity implements OnSharedPreferenceChangeList
 			downloadPath=arg0.getString("downloadPath", "/");
 		}
 	}
+	
+	public void displayMessage(String message)
+	{
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setCancelable(false);
+		builder.setIcon(R.drawable.icon);
+		builder.setTitle("Title");
+		builder.setMessage(message);
+		builder.setInverseBackgroundForced(true);
+		builder.setNeutralButton("Ok", new OnClickListener() {
+			@Override public void onClick(DialogInterface dialog, int which) {
+				dialog.dismiss();
+			}
+		});
+		AlertDialog alert = builder.create();
+		alert.show();
+	}
+	
 	public void displayToast(String message)
 	{
 		Toast toast=Toast.makeText(this, message, Toast.LENGTH_LONG);  

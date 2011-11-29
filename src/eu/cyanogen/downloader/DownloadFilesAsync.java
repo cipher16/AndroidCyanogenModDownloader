@@ -6,30 +6,36 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 
+import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.RemoteViews;
 
 public class DownloadFilesAsync extends AsyncTask<String, Integer, Integer> {
 
 	private int fileSize;
-	private Context context;
+	private downloader context;
 	private String downloadPath;
 	private File downloadedFile;
+	private boolean resumeDownload;
 	//Notification part
 		private Notification notification;
 		private NotificationManager notificationManager;
 		private PendingIntent pendingIntent;
 		
-	public DownloadFilesAsync(Context c,String downPath) {
+	public DownloadFilesAsync(downloader c,String downPath) {
 		context = c;
 		downloadPath = downPath;
+		resumeDownload = PreferenceManager.getDefaultSharedPreferences(context).getBoolean("resumeDownload", false);
 	}
 	
 	@Override
@@ -43,12 +49,44 @@ public class DownloadFilesAsync extends AsyncTask<String, Integer, Integer> {
 				URLConnection uc = url.openConnection();				
 				
 				downloadedFile = new File(Environment.getExternalStorageDirectory()+downloadPath,url.getFile().substring(url.getFile().lastIndexOf("/")+1));
-				if(downloadedFile.exists())
+				if(downloadedFile.exists()&&resumeDownload)
 					uc.setRequestProperty("Range", "bytes="+downloadedFile.length()+"-");
 				
-				FileOutputStream os = new FileOutputStream(downloadedFile);
 				uc.connect();
 				fileSize = uc.getContentLength();
+				
+				if(fileSize<0)
+				{
+					context.runOnUiThread(new Runnable() {
+						@Override public void run() {
+							context.displayMessage("Unable to get correct file information, please retry later");
+						}
+					});
+					break;
+				}
+				
+				Log.v("DownloadedFile","Current filesize ("+downloadedFile.getAbsolutePath()+") : "+downloadedFile.length()+" Final filesize :  "+fileSize);
+				if(fileSize==downloadedFile.length()&&fileSize>0)
+				{
+					context.runOnUiThread(new Runnable() {
+						@Override public void run() {
+							context.displayMessage("This file has already been download");
+						}
+					});
+					break;
+				}
+
+				FileOutputStream os;
+				if(resumeDownload)
+				{
+					os = new FileOutputStream(downloadedFile,true);
+					Log.v("DownloadedFile","Resuming download");
+				}
+				else
+				{
+					os = new FileOutputStream(downloadedFile);
+					Log.v("DownloadedFile","Not Resuming download");
+				}	
 				InputStream is = uc.getInputStream();
 				
 				createOnGoingNotification();
@@ -65,6 +103,7 @@ public class DownloadFilesAsync extends AsyncTask<String, Integer, Integer> {
 		            	lastLength = curLength;
 		            }
 		        }
+		        os.flush();
 		        os.close();
 		        is.close();
 			} catch (Exception e) {

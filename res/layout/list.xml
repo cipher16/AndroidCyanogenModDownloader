@@ -12,6 +12,13 @@
 	    	android:textStyle="bold"
 	    	 android:textScaleX="1.2" />
 	    <TextView
+	    	android:id="@+id/link"
+	    	android:layout_width="fill_parent"
+	    	android:layout_height="wrap_content"
+	    	android:textStyle="italic"
+	    	android:paddingLeft="10px"
+	    	android:textScaleX="0.9" />
+	    <TextView
 	    	android:id="@+id/size"
 	    	android:layout_width="fill_parent"
 	    	android:layout_height="wrap_content"

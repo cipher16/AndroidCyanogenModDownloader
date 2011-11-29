@@ -12,6 +12,7 @@
 			android:entryValues="@array/listValue"
 			android:defaultValue="/"
 		 />
+		 <CheckBoxPreference android:key="resumeDownload" android:summary="When starting a new download resume download, otherwise download will be restarted from scratch" android:title="Enable download resuming" android:defaultValue="false"/>
     </PreferenceCategory>
     <PreferenceCategory android:title="Update Checker">
 		<CheckBoxPreference android:key="useUpdater" android:defaultValue="off" android:title="Check for update" android:summary="Use the Update Checker to get notified when an update is found" />
